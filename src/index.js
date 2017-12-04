@@ -1,6 +1,6 @@
 const smp = require('./string_matching_parser')
 
- _set_key = (step, val, dict) => {
+var _set_key = (step, val, dict) => {
 	var v
 	if(!step.type || step.type == 'str') {
 		v = val	
@@ -88,7 +88,13 @@ var gen_matcher = (expected) => {
 	} 
 }
 
+var match = (expected, received, dict) => {
+	var matcher = gen_matcher(expected)
+	return matcher(received, dict) 
+}
+
 module.exports = {
 	gen_matcher: gen_matcher,
+	match: match,
 }
 

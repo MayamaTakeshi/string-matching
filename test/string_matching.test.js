@@ -1,4 +1,4 @@
-const sm = require('../src/string_matching');
+const sm = require('../src/index');
 
 test('process valid match string', () => {
 	var alias = "tom"

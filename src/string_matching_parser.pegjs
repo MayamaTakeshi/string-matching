@@ -18,7 +18,8 @@
 
 
 main
-	= ct:collectTil { return [ct] }
+	= arr:(collectTil ordinaryString)+ { return flattenArr(arr) }
+	/ ct:collectTil { return [ct] }
 	/ arr:(intercalator? (collectTil ordinaryString)* collectTil) { return flattenArr(arr) }
 	/ arr:(intercalator? ((collectTil ordinaryString) / intercalator)+) { return flattenArr(arr) }
 	/ arr:intercalator+ { return flattenArr(arr) }
