@@ -1,0 +1,33 @@
+{
+  "name": "string-matching",
+  "version": "1.0.0",
+  "description": "Checks strings against patterns and collects matched substrings",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "node_modules/jest/bin/jest.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MayamaTakeshi/string-matching.git"
+  },
+  "keywords": [
+    "string",
+    "matching",
+    "collection",
+    "dictionary",
+    "substring",
+    "pattern"
+  ],
+  "author": "MayamaTakeshi",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/MayamaTakeshi/string-matching/issues"
+  },
+  "homepage": "https://github.com/MayamaTakeshi/string-matching#readme",
+  "dependencies": {
+    "jest": "^19.0.2"
+  },
+  "devDependencies": {
+    "pegjs": "^0.10.0"
+  }
+}
