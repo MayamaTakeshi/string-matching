@@ -24,10 +24,8 @@
     "url": "https://github.com/MayamaTakeshi/string-matching/issues"
   },
   "homepage": "https://github.com/MayamaTakeshi/string-matching#readme",
-  "dependencies": {
-    "jest": "^19.0.2"
-  },
   "devDependencies": {
+    "jest": "^19.0.2"
     "pegjs": "^0.10.0"
   }
 }
