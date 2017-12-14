@@ -1,6 +1,6 @@
 {
   "name": "string-matching",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Checks strings against patterns and collects matched substrings",
   "main": "src/index.js",
   "scripts": {
@@ -25,7 +25,7 @@
   },
   "homepage": "https://github.com/MayamaTakeshi/string-matching#readme",
   "devDependencies": {
-    "jest": "^19.0.2"
+    "jest": "^19.0.2",
     "pegjs": "^0.10.0"
   }
 }
