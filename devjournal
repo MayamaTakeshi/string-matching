@@ -1,5 +1,12 @@
 ====================================================
 2017/12/04 takeshi:
-To build string_matching.js run:
-   ../node_modules/pegjs/bin/pegjs string_matching_parser.pegjs
+To build string_matching.js:
+  cd src/ 
+  ../node_modules/pegjs/bin/pegjs string_matching_parser.pegjs
 
+====================================================
+2018/01/01 takeshi:
+
+Read:
+  https://coderwall.com/p/316gba/beginning-parsers-with-peg-js
+  https://stackoverflow.com/questions/24773462/how-does-backtracking-work-in-peg-js-with-example/24809596#24809596

@@ -348,6 +348,9 @@ function peg$parse(input, options) {
     s3 = peg$parsecollectTil();
     if (s3 !== peg$FAILED) {
       s4 = peg$parseordinaryString();
+      if (s4 === peg$FAILED) {
+        s4 = null;
+      }
       if (s4 !== peg$FAILED) {
         s3 = [s3, s4];
         s2 = s3;
@@ -366,6 +369,9 @@ function peg$parse(input, options) {
         s3 = peg$parsecollectTil();
         if (s3 !== peg$FAILED) {
           s4 = peg$parseordinaryString();
+          if (s4 === peg$FAILED) {
+            s4 = null;
+          }
           if (s4 !== peg$FAILED) {
             s3 = [s3, s4];
             s2 = s3;
@@ -1206,10 +1212,12 @@ function peg$parse(input, options) {
   	function flattenArr(a, r){
   		if(!r){ r = []}
   		for(var i=0; i<a.length; i++){
-  			if(a[i].constructor == Array){
-  				r.concat(flattenArr(a[i], r));
-  			}else{
-  				r.push(a[i]);
+  			if(a[i]) {
+  				if(a[i].constructor == Array){
+  					r.concat(flattenArr(a[i], r));
+  				}else{
+  					r.push(a[i]);
+  				}
   			}
   		}
   		return r;

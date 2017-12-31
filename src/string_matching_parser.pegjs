@@ -2,10 +2,12 @@
 	function flattenArr(a, r){
 		if(!r){ r = []}
 		for(var i=0; i<a.length; i++){
-			if(a[i].constructor == Array){
-				r.concat(flattenArr(a[i], r));
-			}else{
-				r.push(a[i]);
+			if(a[i]) {
+				if(a[i].constructor == Array){
+					r.concat(flattenArr(a[i], r));
+				}else{
+					r.push(a[i]);
+				}
 			}
 		}
 		return r;
@@ -18,7 +20,7 @@
 
 
 main
-	= arr:(collectTil ordinaryString)+ { return flattenArr(arr) }
+	= arr:(collectTil ordinaryString?)+ { return flattenArr(arr) }
 	/ ct:collectTil { return [ct] }
 	/ arr:(intercalator? (collectTil ordinaryString)* collectTil) { return flattenArr(arr) }
 	/ arr:(intercalator? ((collectTil ordinaryString) / intercalator)+) { return flattenArr(arr) }
