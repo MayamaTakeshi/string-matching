@@ -31,7 +31,7 @@ var _set_key = (step, val, dict) => {
 	}
 }
 
-var _match = (steps, received, dict) => {
+var _match = (steps, received, dict, throw_matching_errors) => {
 	if(typeof received != 'string') throw new Error('Received element is not string')
 
 	var remainder = received
@@ -41,7 +41,11 @@ var _match = (steps, received, dict) => {
 
 		if(step.op == 'consume') {
 			if(remainder.substr(0, step.str.length) != step.str){
-				throw new Error("Expected substr '" + step.str + "' not found")
+				if(throw_matching_errors) {
+					throw new Error("Expected substr '" + step.str + "' not found")
+				} else {
+					return false
+				}
 			}
 			remainder = remainder.slice(step.str.length)
 		} else if(step.op == 'collect') {
@@ -56,8 +60,12 @@ var _match = (steps, received, dict) => {
 				if(next_step) {
 					var pos = remainder.indexOf(next_step.str)
 					if(pos < 0) {
-						// we dont use (pos <= 0) because it is OK to collect empty strings
-						throw new Error("Expected string collection delimiter '" + next_step.str + "' not found")
+						if(throw_matching_errors) {
+							// we dont use (pos <= 0) because it is OK to collect empty strings
+							throw new Error("Expected string collection delimiter '" + next_step.str + "' not found")
+						} else {
+							return false
+						}
 					}
 					collected_str = remainder.substring(0, pos)
 					remainder = remainder.slice(collected_str.length)
@@ -68,14 +76,18 @@ var _match = (steps, received, dict) => {
 				}
 			}
 			_set_key(step, collected_str, dict)
-		}	else {
+		} else {
+			if(throw_matching_errors) {
 				throw new Error("Invalid match step")
+			} else {
+				return false
+			}
 		}
 	}	
 	return true
 }
 
-var gen_matcher = (expected) => {
+var gen_matcher = (expected, throw_matching_errors) => {
 	var steps
 	try {
 		steps = smp.parse(expected)
@@ -84,7 +96,7 @@ var gen_matcher = (expected) => {
 		throw new Error("Invalid string match expression '" + expected + "'")
 	}
 	return (received, dict) => {
-		return _match(steps, received, dict)
+		return _match(steps, received, dict, throw_matching_errors)
 	} 
 }
 

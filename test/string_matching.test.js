@@ -4,7 +4,7 @@ test('process valid match string', () => {
 	var alias = "tom"
 	var proto = 'sip'
 
-	var matcher = sm.gen_matcher(`"${alias}" <${proto}:!{user}@!{ip}:!{port:num};tag=!{tag:str:30};phone=!{phone:str:10}>`)
+	var matcher = sm.gen_matcher(`"${alias}" <${proto}:!{user}@!{ip}:!{port:num};tag=!{tag:str:30};phone=!{phone:str:10}>`, false)
 
 	var user = 'tomjones'
 	var ip = '10.20.30.40'
