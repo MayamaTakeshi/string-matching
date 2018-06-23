@@ -4,7 +4,7 @@ test('process valid match string', () => {
 	var alias = "tom"
 	var proto = 'sip'
 
-	var matcher = sm.gen_matcher(`"${alias}" <${proto}:!{user}@!{ip}:!{port:num};tag=!{tag:str:30};phone=!{phone:str:10}>`, false)
+	var matcher = sm.gen_matcher(`"${alias}" <${proto}:!{user}@!{ip}:!{port:num};tag=!{tag:str:30};phone=!{phone:str:10}>`)
 
 	var user = 'tomjones'
 	var ip = '10.20.30.40'
@@ -36,5 +36,5 @@ test('key already set in dict', () => {
 		name: 'spock',
 	} 
 
-	expect( () => { matcher(`name=sulu`, dict) }).toThrow(/already/)
+	expect( () => { matcher(`name=sulu`, dict, true, 'some_path') }).toThrow(/already/)
 })
