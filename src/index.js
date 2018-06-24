@@ -28,7 +28,7 @@ var _set_key = (step, val, dict, throw_matching_error, path) => {
 	if(dict[step.name]) {
 		if(dict[step.name] != v) {
 			if(throw_matching_error) {
-				throw new MatchingError(`value cannot be set to '${v}' because it is already set to ${dict[step.name]}`, path)
+				throw new MatchingError(path, `key '${step.name}' cannot be set to '${v}' because it is already set to '${dict[step.name]}'`)
 			} else {
 				return false
 			}
@@ -42,7 +42,7 @@ var _set_key = (step, val, dict, throw_matching_error, path) => {
 
 var _match = (steps, received, dict, throw_matching_error, path) => {
 	if(typeof received != 'string') {
-		if(throw_matching_error) throw new MatchingError("Received element is not string", path)
+		if(throw_matching_error) throw new MatchingError(path, "not string")
 		return false
 	}
 
@@ -55,7 +55,7 @@ var _match = (steps, received, dict, throw_matching_error, path) => {
 
 		if(step.op == 'consume') {
 			if(remainder.substr(0, step.str.length) != step.str){
-				if(throw_matching_error) throw new MatchingError(`Expected substr '${step.str}' not found`, path)
+				if(throw_matching_error) throw new MatchingError(path, `expected substr '${step.str}' not found`)
 				return false
 			}
 			remainder = remainder.slice(step.str.length)
@@ -64,7 +64,7 @@ var _match = (steps, received, dict, throw_matching_error, path) => {
 			if(step.length) {
 				collected_str = remainder.substring(0, step.length)
 				if(collected_str.length < step.length) {
-					if(throw_matching_error) throw new MatchingError("Not enough chars to be collected in element", path)
+					if(throw_matching_error) throw new MatchingError(path, "not enough chars to be collected in element")
 					return false
 				}
 				remainder = remainder.slice(step.length)
@@ -74,7 +74,7 @@ var _match = (steps, received, dict, throw_matching_error, path) => {
 					var pos = remainder.indexOf(next_step.str)
 					if(pos < 0) {
 						// we dont use (pos <= 0) because it is OK to collect empty strings
-						if(throw_matching_error) throw new MatchingError(`Expected string collection delimiter '${next_step.str}' not found`, path)
+						if(throw_matching_error) throw new MatchingError(path, `expected string collection delimiter '${next_step.str}' not found`)
 						return false
 					}
 					collected_str = remainder.substring(0, pos)

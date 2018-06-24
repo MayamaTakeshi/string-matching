@@ -1,5 +1,5 @@
 class MatchingError extends Error {
-	constructor(reason, path) {
+	constructor(path, reason) {
 		// Pass remaining arguments (including vendor specific ones) to parent constructor
 		super(reason);
 
@@ -8,8 +8,8 @@ class MatchingError extends Error {
 			Error.captureStackTrace(this, MatchingError);
 		}
 
-		this.reason = reason;
 		this.path = path;
+		this.reason = reason;
 	}
 }
 

@@ -36,5 +36,5 @@ test('key already set in dict', () => {
 		name: 'spock',
 	} 
 
-	expect( () => { matcher(`name=sulu`, dict, true, 'some_path') }).toThrow(/already/)
+	expect( () => { matcher(`name=sulu`, dict, true, 'some_path') }).toThrow(/it is already set to/)
 })
