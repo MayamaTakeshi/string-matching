@@ -1,6 +1,7 @@
+const MatchingError = require ('./matching_error')
 const smp = require('./string_matching_parser')
 
-var _set_key = (step, val, dict, throw_matching_errors, path) => {
+var _set_key = (step, val, dict, throw_matching_error, path) => {
 	var v
 	if(!step.type || step.type == 'str') {
 		v = val	
@@ -26,8 +27,8 @@ var _set_key = (step, val, dict, throw_matching_errors, path) => {
 
 	if(dict[step.name]) {
 		if(dict[step.name] != v) {
-			if(throw_matching_errors) {
-				throw new Error(`${path}: '${step.name}' value cannot be set to '${v}' because it is already set to ${dict[step.name]}`)
+			if(throw_matching_error) {
+				throw new MatchingError(`value cannot be set to '${v}' because it is already set to ${dict[step.name]}`, path)
 			} else {
 				return false
 			}
@@ -39,8 +40,11 @@ var _set_key = (step, val, dict, throw_matching_errors, path) => {
 	return true
 }
 
-var _match = (steps, received, dict, throw_matching_errors, path) => {
-	if(typeof received != 'string') throw new Error(`${path}: Received element is not string`)
+var _match = (steps, received, dict, throw_matching_error, path) => {
+	if(typeof received != 'string') {
+		if(throw_matching_error) throw new MatchingError("Received element is not string", path)
+		return false
+	}
 
 	var remainder = received
 
@@ -51,11 +55,8 @@ var _match = (steps, received, dict, throw_matching_errors, path) => {
 
 		if(step.op == 'consume') {
 			if(remainder.substr(0, step.str.length) != step.str){
-				if(throw_matching_errors) {
-					throw new Error(`${path}: Expected substr '${step.str}' not found`)
-				} else {
-					return false
-				}
+				if(throw_matching_error) throw new MatchingError(`Expected substr '${step.str}' not found`, path)
+				return false
 			}
 			remainder = remainder.slice(step.str.length)
 		} else if(step.op == 'collect') {
@@ -63,11 +64,8 @@ var _match = (steps, received, dict, throw_matching_errors, path) => {
 			if(step.length) {
 				collected_str = remainder.substring(0, step.length)
 				if(collected_str.length < step.length) {
-					if(throw_matching_errors) {
-						throw new Error(`${path}: Not enough chars to be collected in element`)
-					} else {
-						return false
-					}
+					if(throw_matching_error) throw new MatchingError("Not enough chars to be collected in element", path)
+					return false
 				}
 				remainder = remainder.slice(step.length)
 			} else {
@@ -75,12 +73,9 @@ var _match = (steps, received, dict, throw_matching_errors, path) => {
 				if(next_step) {
 					var pos = remainder.indexOf(next_step.str)
 					if(pos < 0) {
-						if(throw_matching_errors) {
-							// we dont use (pos <= 0) because it is OK to collect empty strings
-							throw new Error(`${path}: Expected string collection delimiter '${next_step.str}' not found`)
-						} else {
-							return false
-						}
+						// we dont use (pos <= 0) because it is OK to collect empty strings
+						if(throw_matching_error) throw new MatchingError(`Expected string collection delimiter '${next_step.str}' not found`, path)
+						return false
 					}
 					collected_str = remainder.substring(0, pos)
 					remainder = remainder.slice(collected_str.length)
@@ -92,14 +87,13 @@ var _match = (steps, received, dict, throw_matching_errors, path) => {
 			}
 			collected.push([step, collected_str])
 		} else {
-			// This indicates bug in our code
-			throw new Error(`${path}: Invalid match step ${JSON.stringify(step)}`)
+			throw new Error(`${path}: Invalid match step ${JSON.stringify(step)}. This might be bug in our code.`)
 		}
 	}
 	collected.forEach(function(a) {
 		var step = a[0];
 		var val = a[1];
-		if(!_set_key(step, val, dict, throw_matching_errors, path)) {
+		if(!_set_key(step, val, dict, throw_matching_error, path)) {
 			return false
 		}
 	});
@@ -114,18 +108,19 @@ var gen_matcher = (expected) => {
 		console.error(e)
 		throw new Error("Invalid string match expression '" + expected + "'")
 	}
-	return (received, dict, throw_matching_errors, path) => {
-		return _match(steps, received, dict, throw_matching_errors, path)
+	return (received, dict, throw_matching_error, path) => {
+		return _match(steps, received, dict, throw_matching_error, path)
 	} 
 }
 
-var match = (expected, received, dict, throw_matching_errors, path) => {
+var match = (expected, received, dict, throw_matching_error, path) => {
 	var matcher = gen_matcher(expected)
-	return matcher(received, dict, throw_matching_errors, path) 
+	return matcher(received, dict, throw_matching_error, path)
 }
 
 module.exports = {
 	gen_matcher: gen_matcher,
 	match: match,
+	MatchingError: MatchingError,
 }
 
