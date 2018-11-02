@@ -27,5 +27,8 @@
   "devDependencies": {
     "jest": "^19.0.2",
     "pegjs": "^0.10.0"
+  },
+  "dependencies": {
+    "merge": "^1.2.1"
   }
 }
