@@ -1,6 +1,6 @@
 {
   "name": "string-matching",
-  "version": "1.11.1",
+  "version": "1.11.2",
   "description": "Checks strings against patterns and collects matched substrings",
   "main": "src/index.js",
   "scripts": {
