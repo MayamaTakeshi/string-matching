@@ -1,6 +1,6 @@
 {
   "name": "string-matching",
-  "version": "1.11.6",
+  "version": "1.11.7",
   "description": "Checks strings against patterns and collects matched substrings",
   "main": "src/index.js",
   "scripts": {
@@ -29,7 +29,6 @@
     "pegjs": "^0.10.0"
   },
   "dependencies": {
-    "lodash": "^4.17.19",
-    "merge": "^1.2.1"
+    "merge": "^2.1.1"
   }
 }
