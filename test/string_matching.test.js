@@ -26,6 +26,20 @@ test('process valid match string', () => {
 	})		
 })
 
+test('underscore', () => {
+	var matcher = sm.gen_matcher('!{first},!{_},!{second},!{_},!{third}')
+	var dict = {}
+
+	var res = matcher('abc,000,def,111,ghi', dict)
+
+	expect(res).toEqual(true)
+	expect(dict).toEqual({
+		first: 'abc',
+		second: 'def',
+		third: 'ghi',
+	})
+})
+
 test('invalid string match expression', () => {
 	expect( () => { sm.gen_matcher(`!{`) } ).toThrow(/Invalid string match expression/)
 })
