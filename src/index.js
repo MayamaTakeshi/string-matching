@@ -2,8 +2,6 @@ const MatchingError = require ('./matching_error')
 const smp = require('./string_matching_parser')
 
 var _set_key = (step, val, dict, throw_matching_error, path) => {
-	if(step.name == '_') return true
-
 	var v
 	if(!step.type || step.type == 'str') {
 		v = val	
@@ -26,6 +24,8 @@ var _set_key = (step, val, dict, throw_matching_error, path) => {
 		}
 		if(isNaN(v)) throw new Error(`${path}: Invalid value for key '${step.name}'`)
 	}
+
+	if(step.name == '_') return true
 
 	if(dict[step.name]) {
 		if(dict[step.name] != v) {
