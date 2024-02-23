@@ -48,3 +48,27 @@ test('key already set in dict', () => {
 
 	expect( () => { matcher(`name=sulu`, dict, true, 'some_path') }).toThrow(/it is already set to/)
 })
+
+test('push to non-existing array', () => {
+	var matcher = sm.gen_matcher('!{@list},!{@list},!{@list}')
+	var dict = {}
+
+	var res = matcher('abc,def,ghi', dict)
+
+	expect(res).toEqual(true)
+	expect(dict).toEqual({
+		list: ['abc', 'def', 'ghi']
+	})
+})
+
+test('push to existing array', () => {
+	var matcher = sm.gen_matcher('!{@list},!{@list},!{@list}')
+	var dict = {list: ['000']}
+
+	var res = matcher('abc,def,ghi', dict)
+
+	expect(res).toEqual(true)
+	expect(dict).toEqual({
+		list: ['000', 'abc', 'def', 'ghi']
+	})
+})

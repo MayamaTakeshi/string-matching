@@ -1,7 +1,7 @@
 const MatchingError = require ('./matching_error')
 const smp = require('./string_matching_parser')
 
-var _set_key = (step, val, dict, throw_matching_error, path) => {
+var _check_type = (step, val, throw_matching_error, path) => {
 	var v
 	if(!step.type || step.type == 'str') {
 		v = val	
@@ -24,19 +24,20 @@ var _set_key = (step, val, dict, throw_matching_error, path) => {
 		}
 		if(isNaN(v)) throw new Error(`${path}: Invalid value for key '${step.name}'`)
 	}
+	return v
+}
 
-	if(step.name == '_') return true
-
+var _set_key = (step, val, dict, throw_matching_error, path) => {
 	if(dict[step.name]) {
-		if(dict[step.name] != v) {
+		if(dict[step.name] != val) {
 			if(throw_matching_error) {
-				throw new MatchingError(path, `key '${step.name}' cannot be set to '${v}' because it is already set to '${dict[step.name]}'`)
+				throw new MatchingError(path, `key '${step.name}' cannot be set to '${val}' because it is already set to '${dict[step.name]}'`)
 			} else {
 				return false
 			}
 		}
 	} else {
-		dict[step.name] = v
+		dict[step.name] = val
 	}
 
 	return true
@@ -93,9 +94,20 @@ var _match = (steps, received, dict, throw_matching_error, path) => {
 		}
 	}
 	collected.forEach(function(a) {
-		var step = a[0];
-		var val = a[1];
-		if(!_set_key(step, val, dict, throw_matching_error, path)) {
+		var step = a[0]
+		var val = a[1]
+		val = _check_type(step, val, throw_matching_error, path)
+
+		if(step.name == '_') return true
+		
+		if (step.name.startsWith('@')) {
+			var name = step.name
+    			name = name.substring(1)
+			if(!dict[name]) {
+				dict[name] = []
+			}
+			dict[name].push(val)
+		} else if(!_set_key(step, val, dict, throw_matching_error, path)) {
 			return false
 		}
 	});

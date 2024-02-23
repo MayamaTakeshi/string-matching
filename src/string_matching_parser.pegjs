@@ -91,5 +91,5 @@ blank =
 
 _ "space" = " "
 
-varName = s:([_a-zA-Z][_a-zA-Z0-9]*) { return flattenStr(s) }
+varName = s:([@]*[_a-zA-Z][_a-zA-Z0-9]*) { return flattenStr(s) }
 
