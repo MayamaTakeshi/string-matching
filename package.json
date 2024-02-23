@@ -4,7 +4,7 @@
   "description": "Checks strings against patterns and collects matched substrings",
   "main": "src/index.js",
   "scripts": {
-    "build": "cd src/; ../node_modules/pegjs/bin/pegjs string_matching_parser.pegjs",
+    "build": "npx pegjs src/string_matching_parser.pegjs",
     "test": "npm run build && node_modules/jest/bin/jest.js"
   },
   "repository": {
