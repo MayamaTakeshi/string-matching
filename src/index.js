@@ -10,6 +10,9 @@ var _check_type = (step, val, throw_matching_error, path) => {
 		case 'num':
 			v = parseFloat(val)
 			break
+		case 'dec':
+			v = parseInt(val, 10)
+			break
 		case 'hex':
 			v = parseInt(val, 16)
 			break
