@@ -27,21 +27,36 @@ main
 	/ arr:intercalator+ { return flattenArr(arr) }
 		
 collectTil
-	= "!{" _* vn:varName _* optional:(":" _* t:type _*)? "}" { 
-		var data = {op: 'collect', name: vn}
+	= bang:[!]+ "{" _* vn:varName _* optional:(":" _* t:type _*)? "}" { 
+		var collect = {op: 'collect', name: vn}
 		if(optional) {
-			data.type = optional[2]
+			collect.type = optional[2]
 		}
-		return data
+		if(bang.length == 1) {
+			return collect
+		} else {
+			return [
+				{op: 'consume', str: '!'.repeat(bang.length-1) },
+				collect
+			]
+		}
 	}
 		
 collect 
-	= "!{" _* vn:varName _* ":" _* t:type _* ":" _* l:length _* "}" { 
-		return {
-		op: 'collect',
-		name: vn,
-		type: t,
-		length: l
+	= bang:[!]+ "{" _* vn:varName _* ":" _* t:type _* ":" _* l:length _* "}" { 
+		var collect = {
+			op: 'collect',
+			name: vn,
+			type: t,
+			length: l
+		}
+		if(bang.length == 1) {
+			return collect
+		} else {
+			return [
+				{op: 'consume', str: '!'.repeat(bang.length-1) },
+				collect
+			]
 		}
 	}
 
@@ -49,21 +64,18 @@ intercalator
 	= collect
 	/ ordinaryString
 
-ordinaryString = strs:ordinaryStr+ { return {op: 'consume', str: flattenStr(strs)} }
-
-ordinaryStr
-	= escapedBang 
-	/ string 
-		
-escapedBang = "!!" { return "!" }
+ordinaryString = strs:string+ { return {op: 'consume', str: flattenStr(strs)} }
 
 string 
-	= s:([^!])+ { return flattenStr(s) }
-	/ s:([!][^{])+ { return flattenStr(s) }
+	= s:([^!{]+) { return flattenStr(s) }
+	/ s:([!]+[^{]+) { return flattenStr(s) }
+	/ s:([^!]+[{]+) { return flattenStr(s) }
+	/ s:([!][{][^}]*!.) { return flattenStr(s) } // till the end of string
+	/ s:([!][{][^}]+!.) { return flattenStr(s) } // till the end of string
 
 length
 	= s:([1-9][0-9]*) { return parseInt(flattenStr(s)) }
-		
+
 type
 	= "str"
 	/ "num"

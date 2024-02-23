@@ -56,19 +56,60 @@ test('process complex url', () => {
 })
 
 test('unclosed !{}', () => {
-	expect( () => { smp.parse('abc!{') } ).toThrow()
+	expect(smp.parse('abc!{')).toEqual([
+		{ op: 'consume', str: 'abc!{' }
+	])
 })
 
 test('bang', () => {
-	expect(smp.parse('abc!!def')).toEqual([
+	expect(smp.parse('abc!def')).toEqual([
 		{ op: 'consume', str: 'abc!def' },
 	])
 })
 
-test('non collection', () => {
-	expect(smp.parse('@!!{aaa')).toEqual([
+test('no collection', () => {
+	expect(smp.parse('!{')).toEqual([
+		{ op: 'consume', str: '!{' },
+	])
+
+	expect(smp.parse('!{abc')).toEqual([
+		{ op: 'consume', str: '!{abc' },
+	])
+
+	expect(smp.parse('@!{aaa')).toEqual([
 		{ op: 'consume', str: '@!{aaa' },
 	])
 })
 
+// The below doesn't work yet
+/*
+test('incomplete sequence !{', () => {
+	expect(smp.parse('!{!{id}@')).toEqual([
+		{ op: 'consume', str: '!{' },
+		{ op: 'collect', name: 'id'},
+		{ op: 'consume', str: '@' },
+	])
+
+	expect(smp.parse('!{abc!{id}@')).toEqual([
+		{ op: 'consume', str: '!{abc' },
+		{ op: 'collect', name: 'id'},
+		{ op: 'consume', str: '@' },
+	])
+
+	expect(smp.parse('@!{aaa!{id}@')).toEqual([
+		{ op: 'consume', str: '@!{aaa' },
+		{ op: 'collect', name: 'id'},
+		{ op: 'consume', str: '@' },
+	])
+})
+*/
+
+test('bang before !{}', () => {
+	expect(smp.parse('@!!{key}@')).toEqual([
+		{ op: 'consume', str: '@' },
+		{ op: 'consume', str: '!' },
+		{ op: 'collect', name: 'key' },
+		{ op: 'consume', str: '@' },
+	])
+})
 

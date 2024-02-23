@@ -40,10 +40,6 @@ test('underscore', () => {
 	})
 })
 
-test('invalid string match expression', () => {
-	expect( () => { sm.gen_matcher(`!{`) } ).toThrow(/Invalid string match expression/)
-})
-
 test('key already set in dict', () => {
 	var matcher = sm.gen_matcher(`name=!{name}`)
 	var dict = {
