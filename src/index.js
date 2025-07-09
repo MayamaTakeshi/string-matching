@@ -120,7 +120,29 @@ var _match = (steps, received, dict, throw_matching_error, path) => {
 var gen_matcher = (expected) => {
 	var steps
 	try {
-		steps = smp.parse(expected)
+		steps = smp.parse(expected, {
+			// Pass a "tracer" object to the parse method
+			tracer: {
+			    trace: function(event) {
+				console.error(event)
+				// This function is called for each tracing event
+				// 'event' object contains details like:
+				//   - type: 'rule.enter', 'rule.match', 'rule.fail'
+				//   - rule: name of the rule
+				//   - location: { line, column, offset }
+				//   - result (for rule.match): the value returned by the rule
+				//   - text (for rule.match/fail): the text consumed/attempted
+
+				if (event.type === 'rule.enter') {
+				    console.log(`-> Enter ${event.rule} at L${event.location.start.line}, C${event.location.start.column}`);
+				} else if (event.type === 'rule.match') {
+				    console.log(`<- Match ${event.rule} (consumed "${event.result}") at L${event.location.end.line}, C${event.location.end.column}`);
+				} else if (event.type === 'rule.fail') {
+				    console.log(`x  Fail ${event.rule} at L${event.location.start.line}, C${event.location.start.column}`);
+				}
+			    }
+			}
+		    });
 	} catch (e) {
 		console.error(e)
 		throw new Error("Invalid string match expression '" + expected + "'")
