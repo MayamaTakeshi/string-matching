@@ -72,3 +72,37 @@ test('push to existing array', () => {
 		list: ['000', 'abc', 'def', 'ghi']
 	})
 })
+
+test('trailing spaces, left bang', () => {
+	var matcher = sm.gen_matcher(' !!{@list},!{@list},!{@list} ')
+	var dict = {}
+
+	var res = matcher(' !abc,def,ghi ', dict)
+
+	expect(res).toEqual(true)
+	expect(dict).toEqual({
+		list: ['abc', 'def', 'ghi']
+	})
+})
+
+test('trailing spaces, bangs, curly-braces and empty !{}', () => {
+	var matcher = sm.gen_matcher(' !{@list},!{@list},!{@list},!{@list} !{@list} ')
+	var dict = {}
+
+	var res = matcher(' !!!,abc,{def},{{ghi}} !{} ', dict)
+
+	expect(res).toEqual(true)
+	expect(dict).toEqual({
+		list: ['!!!', 'abc', '{def}', '{{ghi}}', '!{}']
+	})
+})
+
+test('json inside string', () => {
+	var matcher = sm.gen_matcher('Destination [!{_}/ban_cti_sync.py remove domain] error [None]. result: Failed with {"result_code": 500}')
+
+	var dict = {}
+
+	var res = matcher('Destination [/root/tmp/some_app/ban_cti_sync.py remove domain] error [None]. result: Failed with {"result_code": 500}', dict)
+
+	expect(res).toEqual(true)
+})

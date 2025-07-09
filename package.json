@@ -1,12 +1,10 @@
 {
   "name": "string-matching",
-  "version": "1.14.0",
+  "version": "1.15.0",
   "description": "Checks strings against patterns and collects matched substrings",
   "main": "src/index.js",
   "scripts": {
-    "build": "npx peggy src/string_matching_parser.pegjs",
-    "build-dev": "npx peggy src/string_matching_parser.pegjs --trace",
-    "test": "npm run build && node_modules/jest/bin/jest.js"
+    "test": "node_modules/jest/bin/jest.js"
   },
   "repository": {
     "type": "git",
@@ -27,7 +25,6 @@
   },
   "homepage": "https://github.com/MayamaTakeshi/string-matching#readme",
   "devDependencies": {
-    "peggy": "^5.0.4",
     "jest": "^27.4.3"
   },
   "dependencies": {

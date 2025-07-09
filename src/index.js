@@ -1,165 +1,130 @@
 const MatchingError = require ('./matching_error')
-const smp = require('./string_matching_parser')
 
-var _check_type = (step, val, throw_matching_error, path) => {
-	var v
-	if(!step.type || step.type == 'str') {
-		v = val	
-	} else {
-		switch(step.type) {
-		case 'num':
-			v = parseFloat(val)
-			break
-		case 'dec':
-			v = parseInt(val, 10)
-			break
-		case 'hex':
-			v = parseInt(val, 16)
-			break
-		case 'bin':
-			v = parseInt(val, 2)
-			break
-		case 'oct':
-			v = parseInt(val, 8)
-			break
-		default:
-			throw new Error("Unexpected step.type='" + step.type + "'")
-		}
-		if(isNaN(v)) throw new Error(`${path}: Invalid value for key '${step.name}'`)
-	}
-	return v
+var _set_key = (key, val, dict, throw_matching_error, path) => {
+  if(dict[key]) {
+    if(dict[key] != val) {
+      if(throw_matching_error) {
+        throw new MatchingError(path, `key '${key}' cannot be set to '${val}' because it is already set to '${dict[key]}'`)
+      } else {
+        return false
+      }
+    }
+  } else {
+    dict[key] = val
+  }
+
+  return true
 }
 
-var _set_key = (step, val, dict, throw_matching_error, path) => {
-	if(dict[step.name]) {
-		if(dict[step.name] != val) {
-			if(throw_matching_error) {
-				throw new MatchingError(path, `key '${step.name}' cannot be set to '${val}' because it is already set to '${dict[step.name]}'`)
-			} else {
-				return false
-			}
-		}
-	} else {
-		dict[step.name] = val
-	}
-
-	return true
+function escapeRegex(str) {
+  return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 }
 
-var _match = (steps, received, dict, throw_matching_error, path) => {
-	if(typeof received != 'string') {
-		if(throw_matching_error) throw new MatchingError(path, "not string")
-		return false
-	}
+function buildRegexFromPattern(pattern) {
+  const regexParts = [];
+  const keys = [];
 
-	var remainder = received
+  let lastIndex = 0;
+  const collectorRegex = /!{(@?)([a-zA-Z0-9_]+)(?::([a-z]+))?(?::([0-9]+))?}/g;
+  let m;
 
-	var collected = [];
-	
-	for(var i=0 ; i<steps.length ; i++) {
-		var step = steps[i]
+  while ((m = collectorRegex.exec(pattern)) !== null) {
+    // Add literal before collector
+    if (m.index > lastIndex) {
+      regexParts.push(escapeRegex(pattern.slice(lastIndex, m.index)));
+    }
 
-		if(step.op == 'consume') {
-			if(remainder.substr(0, step.str.length) != step.str){
-				if(throw_matching_error) throw new MatchingError(path, `expected substr '${step.str}' not found`)
-				return false
-			}
-			remainder = remainder.slice(step.str.length)
-		} else if(step.op == 'collect') {
-			var collected_str
-			if(step.length) {
-				collected_str = remainder.substring(0, step.length)
-				if(collected_str.length < step.length) {
-					if(throw_matching_error) throw new MatchingError(path, "not enough chars to be collected in element")
-					return false
-				}
-				remainder = remainder.slice(step.length)
-			} else {
-				var next_step = steps[i+1]
-				if(next_step) {
-					var pos = remainder.indexOf(next_step.str)
-					if(pos < 0) {
-						// we dont use (pos <= 0) because it is OK to collect empty strings
-						if(throw_matching_error) throw new MatchingError(path, `expected string collection delimiter '${next_step.str}' not found`)
-						return false
-					}
-					collected_str = remainder.substring(0, pos)
-					remainder = remainder.slice(collected_str.length)
-				} else {
-					// collect till the end
-					collected_str = remainder
-					remainder = ""
-				}
-			}
-			collected.push([step, collected_str])
-		} else {
-			throw new Error(`${path}: Invalid match step ${JSON.stringify(step)}. This might be bug in our code.`)
-		}
-	}
-	collected.forEach(function(a) {
-		var step = a[0]
-		var val = a[1]
-		val = _check_type(step, val, throw_matching_error, path)
+    const isArray = m[1] === '@';
+    const key = m[2];
+    const type = m[3] || 'str';
+    const length = m[4] ? parseInt(m[4], 10) : null;
 
-		if(step.name == '_') return true
-		
-		if (step.name.startsWith('@')) {
-			var name = step.name
-    			name = name.substring(1)
-			if(!dict[name]) {
-				dict[name] = []
-			}
-			dict[name].push(val)
-		} else if(!_set_key(step, val, dict, throw_matching_error, path)) {
-			return false
-		}
-	});
-	return true
+    if (length != null) {
+      regexParts.push(`(.{${length}})`);
+    } else {
+      // Match anything non-greedy until next literal or end
+      regexParts.push('(.+?)');
+    }
+
+    keys.push({ key, type, isArray });
+    lastIndex = m.index + m[0].length;
+  }
+
+  // Add remaining literal
+  if (lastIndex < pattern.length) {
+    regexParts.push(escapeRegex(pattern.slice(lastIndex)));
+  }
+
+  const regex = new RegExp('^' + regexParts.join('') + '$');
+  return { regex, keys };
+}
+
+function convertValue(str, type) {
+  switch (type) {
+    case 'num':
+    case 'dec': return parseInt(str, 10);
+    case 'hex': return parseInt(str, 16);
+    case 'bin': return parseInt(str, 2);
+    case 'oct': return parseInt(str, 8);
+    default: return str;
+  }
+}
+
+var _match = (regex, keys, received, dict, throw_matching_error, path) => {
+  const m = regex.exec(received);
+  if (!m) {
+    if(throw_matching_error) {
+      throw new Error(`No match for path=${path}`)
+    } else {
+      return false;
+    }
+  }
+
+  for (let i = 0; i < keys.length; i++) {
+    const { key, type, isArray } = keys[i];
+    if(key == '_') {
+      continue
+    }
+
+    const rawVal = m[i + 1];
+    const val = convertValue(rawVal, type);
+    if (isArray) {
+      if (!dict[key]) {
+        dict[key] = [];
+      } else {
+        if(!Array.isArray(dict[key])) {
+          if(throw_matching_error) {
+            throw new MatchingError(path, `value ${val}' cannot be pushed to ${key} because it is not an array. path=${path}`)
+          } else {
+            return false
+          }
+        }
+      }
+      dict[key].push(val)
+    } else {
+      _set_key(key, val, dict, throw_matching_error, path)
+    }
+  }
+
+  return true
 }
 
 var gen_matcher = (expected) => {
-	var steps
-	try {
-		steps = smp.parse(expected, {
-			// Pass a "tracer" object to the parse method
-			tracer: {
-			    trace: function(event) {
-				console.error(event)
-				// This function is called for each tracing event
-				// 'event' object contains details like:
-				//   - type: 'rule.enter', 'rule.match', 'rule.fail'
-				//   - rule: name of the rule
-				//   - location: { line, column, offset }
-				//   - result (for rule.match): the value returned by the rule
-				//   - text (for rule.match/fail): the text consumed/attempted
+  const { regex, keys } = buildRegexFromPattern(expected);
 
-				if (event.type === 'rule.enter') {
-				    console.log(`-> Enter ${event.rule} at L${event.location.start.line}, C${event.location.start.column}`);
-				} else if (event.type === 'rule.match') {
-				    console.log(`<- Match ${event.rule} (consumed "${event.result}") at L${event.location.end.line}, C${event.location.end.column}`);
-				} else if (event.type === 'rule.fail') {
-				    console.log(`x  Fail ${event.rule} at L${event.location.start.line}, C${event.location.start.column}`);
-				}
-			    }
-			}
-		    });
-	} catch (e) {
-		console.error(e)
-		throw new Error("Invalid string match expression '" + expected + "'")
-	}
-	return (received, dict, throw_matching_error, path) => {
-		return _match(steps, received, dict, throw_matching_error, path)
-	} 
+  return (received, dict, throw_matching_error, path) => {
+    return _match(regex, keys, received, dict, throw_matching_error, path)
+  }
 }
 
 var match = (expected, received, dict, throw_matching_error, path) => {
-	var matcher = gen_matcher(expected)
-	return matcher(received, dict, throw_matching_error, path)
+  var matcher = gen_matcher(expected)
+  return matcher(received, dict, throw_matching_error, path)
 }
 
 module.exports = {
-	gen_matcher: gen_matcher,
-	match: match,
-	MatchingError: MatchingError,
+  gen_matcher: gen_matcher,
+  match: match,
+  MatchingError: MatchingError,
 }
 
