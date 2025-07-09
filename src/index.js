@@ -25,7 +25,7 @@ function buildRegexFromPattern(pattern) {
   const keys = [];
 
   let lastIndex = 0;
-  const collectorRegex = /!{(@?)([a-zA-Z0-9_]+)(?::([a-z]+))?(?::([0-9]+))?}/g;
+  const collectorRegex = /!{([@a-zA-Z_]+)(?::([a-z]+))?(?::([0-9]+))?}/g;
   let m;
 
   while ((m = collectorRegex.exec(pattern)) !== null) {
@@ -34,10 +34,9 @@ function buildRegexFromPattern(pattern) {
       regexParts.push(escapeRegex(pattern.slice(lastIndex, m.index)));
     }
 
-    const isArray = m[1] === '@';
-    const key = m[2];
-    const type = m[3] || 'str';
-    const length = m[4] ? parseInt(m[4], 10) : null;
+    const key = m[1];
+    const type = m[2] || 'str';
+    const length = m[3] ? parseInt(m[3], 10) : null;
 
     if (length != null) {
       regexParts.push(`(.{${length}})`);
@@ -46,7 +45,7 @@ function buildRegexFromPattern(pattern) {
       regexParts.push('(.+?)');
     }
 
-    keys.push({ key, type, isArray });
+    keys.push({ key, type });
     lastIndex = m.index + m[0].length;
   }
 
@@ -81,14 +80,15 @@ var _match = (regex, keys, received, dict, throw_matching_error, path) => {
   }
 
   for (let i = 0; i < keys.length; i++) {
-    const { key, type, isArray } = keys[i];
+    let { key, type } = keys[i];
     if(key == '_') {
       continue
     }
 
     const rawVal = m[i + 1];
-    const val = convertValue(rawVal, type);
-    if (isArray) {
+    let val = convertValue(rawVal, type);
+    if (key.startsWith('@')) {
+      key = key.slice(1)
       if (!dict[key]) {
         dict[key] = [];
       } else {
