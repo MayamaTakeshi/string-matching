@@ -106,3 +106,14 @@ test('json inside string', () => {
 
 	expect(res).toEqual(true)
 })
+
+test('excracting from complex string', () => {
+	var matcher = sm.gen_matcher('xml_url:{id=send_fax;notify_call_completed=true}http://!{ip_addr}:4001/xml?uuid=20e1538c-6f65-4d17-b5ff-4da25da3a472')
+
+	var dict = {}
+
+	var res = matcher('xml_url:{id=send_fax;notify_call_completed=true}http://192.168.0.113:4001/xml?uuid=20e1538c-6f65-4d17-b5ff-4da25da3a472', dict)
+
+	expect(res).toEqual(true)
+  expect(dict.ip_addr).toEqual('192.168.0.113')
+})
