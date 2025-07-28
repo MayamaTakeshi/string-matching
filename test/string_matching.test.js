@@ -129,3 +129,24 @@ test('multiline string', () => {
   expect(dict.main).toEqual("AAA\r\nAAA")
   expect(dict.rest).toEqual("\r\nBBB")
 })
+
+test('empty match', () => {
+	var matcher = sm.gen_matcher('!{nothing}AAA')
+
+	var dict = {}
+
+	var res = matcher("AAA", dict)
+
+	expect(res).toEqual(true)
+  expect(dict.nothing).toEqual("")
+})
+
+test('empty match, no capture', () => {
+	var matcher = sm.gen_matcher('!{_}AAA')
+
+	var dict = {}
+
+	var res = matcher("AAA", dict)
+
+	expect(res).toEqual(true)
+})

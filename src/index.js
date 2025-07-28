@@ -42,7 +42,7 @@ function buildRegexFromPattern(pattern) {
       regexParts.push(`(.{${length}})`);
     } else {
       // Match anything non-greedy until next literal or end
-      regexParts.push('(.+?)');
+      regexParts.push('(.*?)');
     }
 
     keys.push({ key, type });
