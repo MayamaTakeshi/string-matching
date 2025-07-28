@@ -130,6 +130,18 @@ test('sip uri match', () => {
   expect(dict.domain).toEqual("biloxi.com")
 })
 
+test('indentifiers with numbers', () => {
+	var matcher = sm.gen_matcher('sip:!{user1}@!{domain1}')
+
+	var dict = {}
+
+	var res = matcher("sip:bob@biloxi.com", dict)
+
+	expect(res).toEqual(true)
+  expect(dict.user1).toEqual("bob")
+  expect(dict.domain1).toEqual("biloxi.com")
+})
+
 test('multiline string', () => {
 	var matcher = sm.gen_matcher('#!{main}BBB#!{rest}')
 

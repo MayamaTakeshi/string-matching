@@ -25,7 +25,7 @@ function buildRegexFromPattern(pattern) {
   const keys = [];
 
   let lastIndex = 0;
-  const collectorRegex = /!{([@a-zA-Z_]+)(?::([a-z]+))?(?::([0-9]+))?}/g;
+  const collectorRegex = /!{([@a-zA-Z0-9_]+)(?::([a-z]+))?(?::([0-9]+))?}/g;
   let m;
 
   while ((m = collectorRegex.exec(pattern)) !== null) {
