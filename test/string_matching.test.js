@@ -117,3 +117,15 @@ test('excracting from complex string', () => {
 	expect(res).toEqual(true)
   expect(dict.ip_addr).toEqual('192.168.0.113')
 })
+
+test('multiline string', () => {
+	var matcher = sm.gen_matcher('#!{main}BBB#!{rest}')
+
+	var dict = {}
+
+	var res = matcher("#AAA\r\nAAABBB#\r\nBBB", dict)
+
+	expect(res).toEqual(true)
+  expect(dict.main).toEqual("AAA\r\nAAA")
+  expect(dict.rest).toEqual("\r\nBBB")
+})

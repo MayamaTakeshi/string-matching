@@ -4,17 +4,17 @@ var _set_key = (key, val, dict, throw_matching_error, path) => {
   if(dict[key]) {
     if(dict[key] != val) {
       if(throw_matching_error) {
-        throw new MatchingError(path, `key '${key}' cannot be set to '${val}' because it is already set to '${dict[key]}'`)
+        throw new MatchingError(path, `key '${key}' cannot be set to '${val}' because it is already set to '${dict[key]}'`);
       } else {
-        return false
+        return false;
       }
     }
   } else {
-    dict[key] = val
+    dict[key] = val;
   }
 
-  return true
-}
+  return true;
+};
 
 function escapeRegex(str) {
   return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
@@ -54,7 +54,7 @@ function buildRegexFromPattern(pattern) {
     regexParts.push(escapeRegex(pattern.slice(lastIndex)));
   }
 
-  const regex = new RegExp('^' + regexParts.join('') + '$');
+  const regex = new RegExp('^' + regexParts.join('') + '$', 's');
   return { regex, keys };
 }
 
@@ -73,7 +73,7 @@ var _match = (regex, keys, received, dict, throw_matching_error, path) => {
   const m = regex.exec(received);
   if (!m) {
     if(throw_matching_error) {
-      throw new Error(`No match for path=${path}`)
+      throw new Error(`No match for path=${path}`);
     } else {
       return false;
     }
@@ -82,49 +82,48 @@ var _match = (regex, keys, received, dict, throw_matching_error, path) => {
   for (let i = 0; i < keys.length; i++) {
     let { key, type } = keys[i];
     if(key == '_') {
-      continue
+      continue;
     }
 
     const rawVal = m[i + 1];
     let val = convertValue(rawVal, type);
     if (key.startsWith('@')) {
-      key = key.slice(1)
+      key = key.slice(1);
       if (!dict[key]) {
         dict[key] = [];
       } else {
         if(!Array.isArray(dict[key])) {
           if(throw_matching_error) {
-            throw new MatchingError(path, `value ${val}' cannot be pushed to ${key} because it is not an array. path=${path}`)
+            throw new MatchingError(path, `value ${val}' cannot be pushed to ${key} because it is not an array. path=${path}`);
           } else {
-            return false
+            return false;
           }
         }
       }
-      dict[key].push(val)
+      dict[key].push(val);
     } else {
-      _set_key(key, val, dict, throw_matching_error, path)
+      _set_key(key, val, dict, throw_matching_error, path);
     }
   }
 
-  return true
-}
+  return true;
+};
 
 var gen_matcher = (expected) => {
   const { regex, keys } = buildRegexFromPattern(expected);
 
   return (received, dict, throw_matching_error, path) => {
-    return _match(regex, keys, received, dict, throw_matching_error, path)
-  }
-}
+    return _match(regex, keys, received, dict, throw_matching_error, path);
+  };
+};
 
 var match = (expected, received, dict, throw_matching_error, path) => {
-  var matcher = gen_matcher(expected)
-  return matcher(received, dict, throw_matching_error, path)
-}
+  var matcher = gen_matcher(expected);
+  return matcher(received, dict, throw_matching_error, path);
+};
 
 module.exports = {
   gen_matcher: gen_matcher,
   match: match,
   MatchingError: MatchingError,
 }
-
