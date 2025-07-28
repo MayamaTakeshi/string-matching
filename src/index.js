@@ -73,7 +73,7 @@ var _match = (regex, keys, received, dict, throw_matching_error, path) => {
   const m = regex.exec(received);
   if (!m) {
     if(throw_matching_error) {
-      throw new Error(`No match for path=${path}`);
+      throw new MatchingError(path, `No match`);
     } else {
       return false;
     }
