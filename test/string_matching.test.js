@@ -118,6 +118,18 @@ test('excracting from complex string', () => {
   expect(dict.ip_addr).toEqual('192.168.0.113')
 })
 
+test('sip uri match', () => {
+	var matcher = sm.gen_matcher('sip:!{user}@!{domain}')
+
+	var dict = {}
+
+	var res = matcher("sip:bob@biloxi.com", dict)
+
+	expect(res).toEqual(true)
+  expect(dict.user).toEqual("bob")
+  expect(dict.domain).toEqual("biloxi.com")
+})
+
 test('multiline string', () => {
 	var matcher = sm.gen_matcher('#!{main}BBB#!{rest}')
 
@@ -150,3 +162,5 @@ test('empty match, no capture', () => {
 
 	expect(res).toEqual(true)
 })
+
+
